@@ -1,5 +1,7 @@
 package br.org.jprojects.desafiodesignpatternsspring.service;
 
+import br.org.jprojects.desafiodesignpatternsspring.dto.AddressDTO;
+import br.org.jprojects.desafiodesignpatternsspring.mappers.AddressMapper;
 import br.org.jprojects.desafiodesignpatternsspring.model.Client;
 import br.org.jprojects.desafiodesignpatternsspring.repository.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +15,14 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
+    private final ClientCepService clientCepService;
+
+    private final AddressMapper addressMapper = AddressMapper.INSTANCE;
+
     @Autowired
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository, ClientCepService clientCepService) {
         this.clientRepository = clientRepository;
+        this.clientCepService = clientCepService;
     }
 
     public List<Client> getAll() {
@@ -35,6 +42,10 @@ public class ClientService {
 
 
     public Client create(Client client) {
+
+        AddressDTO addressDTO = clientCepService.consultarCEP(client.getAddress().getZipcode());
+        addressMapper.updateModel(addressDTO, client.getAddress());
+
         return clientRepository.save(client);
     }
 
